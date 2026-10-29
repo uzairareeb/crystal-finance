@@ -33,18 +33,21 @@ def ensure_owner():
             conn.execute(
                 "UPDATE users SET password_hash = ?, must_change = 1 WHERE id = ?",
                 (generate_password_hash(DEFAULT_PASS), user["id"]))
-            conn.execute(
-                "DELETE FROM allocations WHERE transaction_id IN (SELECT id FROM transactions WHERE is_demo = 1)")
-            for table in ("attachments", "transactions", "receivables",
-                          "payables", "recurring", "projects", "people", "accounts"):
-                conn.execute(f"DELETE FROM {table} WHERE is_demo = 1")
+            # Full factory reset of user-entered data (pre-launch: the DB holds
+            # only verification-run artefacts, nothing real yet). Seeded
+            # categories, the users row and the audit trail are kept.
+            for table in ("allocations", "attachments", "transactions",
+                          "receivables", "payables", "recurring",
+                          "projects", "people", "accounts",
+                          "notifications_seen"):
+                conn.execute(f"DELETE FROM {table}")
             conn.execute(
                 "UPDATE settings SET app_name = ?, currency = ?, date_format = ?, "
                 "financial_year_start = ?, theme = ?, default_period = ?",
                 ("Crystal Finance", "PKR", "dmy", "01-01", "light", "month"))
             from crystal.db import audit
             audit(conn, "recovery_reset", "users", user["id"],
-                  "Owner password reset to default and demo data cleared via CRYSTAL_RECOVERY")
+                  "Owner password reset to default; all user data wiped (factory reset) via CRYSTAL_RECOVERY")
             conn.commit()
         return user
     finally:
