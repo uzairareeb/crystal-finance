@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Export Transactions (CSV)</h3>
+<form method="post" class="filters"><input type="hidden" name="kind" value="csv">
+  <input type="date" name="from"><input type="date" name="to">
+  <select name="type"><option value="">All types</option>{% for t in ['received','paid','transfer','refund_received','refund_issued','opening_adjustment'] %}<option value="{{ t }}">{{ t }}</option>{% endfor %}</select>
+  <select name="status"><option value="">All statuses</option>{% for s in ['Completed','Pending','Cancelled','Voided'] %}<option>{{ s }}</option>{% endfor %}</select>
+  <button class="btn" type="submit">Download CSV</button></form></div>
+<div class="card" style="margin-top:16px"><h3>Printable Reports</h3>
+<p>Monthly and annual reports, statements and ledgers all include a Print button — use your browser's Print / Save as PDF.</p>
+<ul><li><a href="{{ url_for('reports.monthly') }}">Monthly Report</a></li>
+<li><a href="{{ url_for('reports.annual') }}">Annual Report</a></li>
+<li><a href="{{ url_for('tx.all_tx') }}">Full transaction ledger</a></li></ul></div>
+<div class="card" style="margin-top:16px"><h3>Full Backup (JSON)</h3>
+<form method="post"><input type="hidden" name="kind" value="backup"><button class="btn" type="submit">Download Full Backup</button></form></div>
+<div class="card" style="margin-top:16px"><h3>Restore from Backup</h3>
+<form method="post" enctype="multipart/form-data">
+  <input type="hidden" name="kind" value="restore">
+  <div class="field"><label>Backup JSON file</label><input type="file" name="backup" accept=".json" required></div>
+  <button class="btn" type="submit">Restore</button></form>
+<p class="muted">Validated before import. Existing transactions are matched by code — duplicates are skipped and never silently overwritten.</p></div>
+{% endblock %}

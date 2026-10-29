@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Add Category</h3>
+<form method="post" class="filters"><input type="hidden" name="action" value="add">
+  <input name="name" placeholder="Category name *" required>
+  <select name="kind"><option value="income">Income</option><option value="expense">Expense</option></select>
+  <button class="btn" type="submit">Add</button></form></div>
+<div class="card" style="margin-top:16px"><h3>Categories &amp; Monthly Budgets</h3>
+<p class="muted">Budgets are shown for guidance only — they never block a valid transaction.</p>
+<div class="tablewrap"><table><tr><th>Name</th><th>Kind</th><th>Monthly Budget</th><th>Spent This Month</th><th>Usage</th><th></th></tr>
+{% for c in cats %}{% set used = spent.get(c.id, 0) %}<tr><td>{{ c.name }}</td><td>{{ c.kind }}</td>
+<td>{% if c.budget_paisa %}{{ fmt_money(c.budget_paisa) }}{% else %}—{% endif %}</td>
+<td>{{ fmt_money(used) }}</td>
+<td>{% if c.budget_paisa and c.budget_paisa > 0 %}{% set pct = (used * 100 // c.budget_paisa) %}<div class="bar"><i style="width:{{ pct if pct < 100 else 100 }}%"></i></div>{{ pct }}%{% else %}—{% endif %}</td>
+<td><form class="inline-form" method="post"><input type="hidden" name="action" value="budget"><input type="hidden" name="category_id" value="{{ c.id }}">
+<input name="budget" placeholder="Budget PKR" inputmode="decimal" style="width:130px"><button class="btn ghost small" type="submit">Set</button></form>
+<form class="inline-form" method="post" onsubmit="return confirm('Archive this category?')"><input type="hidden" name="action" value="archive"><input type="hidden" name="category_id" value="{{ c.id }}"><button class="btn ghost small" type="submit">Archive</button></form></td></tr>
+{% else %}<tr><td colspan="6" class="muted">No categories.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

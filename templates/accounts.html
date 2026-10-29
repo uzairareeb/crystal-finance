@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Add Account</h3>
+<form method="post" class="filters">
+  <input name="name" placeholder="Account name *" required>
+  <select name="type"><option>Cash</option><option>Bank</option><option>JazzCash</option><option>Easypaisa</option><option>Digital Wallet</option><option>Other</option></select>
+  <input name="opening" placeholder="Opening balance (PKR)" inputmode="decimal">
+  <input type="date" name="opening_date"><input name="notes" placeholder="Notes">
+  <button class="btn" type="submit">Add Account</button>
+</form>
+<p class="muted">Opening balances are separate from income — they never appear as received money.</p></div>
+<div class="card" style="margin-top:16px"><h3>My Accounts</h3>
+<div class="tablewrap"><table><tr><th>Name</th><th>Type</th><th>Opening</th><th>Current Balance</th><th></th></tr>
+{% for r in rows %}{% if r.active %}<tr><td><a href="{{ url_for('tx.all_tx') }}?account={{ r.id }}">{{ r.name }}</a></td><td>{{ r.type }}</td>
+<td>{{ fmt_money(r.opening_paisa) }}</td><td><b>{{ fmt_money(bal.get(r.id, 0)) }}</b></td>
+<td><form class="inline-form" method="post" action="{{ url_for('accounts.archive_account', aid=r.id) }}" onsubmit="return confirm('Archive this account? It stays in reports but cannot be used for new entries.')"><button class="btn ghost small" type="submit">Archive</button></form></td></tr>{% endif %}
+{% else %}<tr><td colspan="5" class="muted">No accounts yet.</td></tr>{% endfor %}</table></div>
+<p class="muted">Click an account name to see its full transaction history.</p></div>
+{% endblock %}

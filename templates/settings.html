@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>General Settings</h3>
+<form method="post"><input type="hidden" name="action" value="general"><input type="hidden" name="settings_id" value="{{ settings.id }}">
+  <div class="field"><label>Application name</label><input name="app_name" value="{{ settings.app_name }}"></div>
+  <div class="field"><label>Currency</label><select name="currency"><option {% if settings.currency=='PKR' %}selected{% endif %}>PKR</option><option {% if settings.currency=='USD' %}selected{% endif %}>USD</option><option {% if settings.currency=='EUR' %}selected{% endif %}>EUR</option><option {% if settings.currency=='GBP' %}selected{% endif %}>GBP</option></select></div>
+  <div class="field"><label>Theme</label><select name="theme"><option value="light" {% if settings.theme=='light' %}selected{% endif %}>Light</option><option value="dark" {% if settings.theme=='dark' %}selected{% endif %}>Dark</option></select></div>
+  <div class="field"><label>Default dashboard period</label><select name="default_period"><option value="month" {% if settings.default_period=='month' %}selected{% endif %}>Month</option><option value="year" {% if settings.default_period=='year' %}selected{% endif %}>Year</option></select></div>
+  <button class="btn" type="submit">Save Settings</button></form>
+<p class="muted">Currency display: PKR 125,000.00 (thousands separators, 2 decimals). Multi-currency is stored per transaction with its own currency code; balances are never merged across currencies without conversion.</p></div>
+<div class="card" style="margin-top:16px"><h3>Change Password</h3>
+<form method="post"><input type="hidden" name="action" value="password">
+  <div class="field"><label>New password (min 8 characters)</label><input type="password" name="new_password" required minlength="8"></div>
+  <button class="btn" type="submit">Change Password</button></form></div>
+<div class="card" style="margin-top:16px"><h3>Demo Data</h3>
+<p class="muted">Demo rows are clearly labelled and separate from your real records.</p>
+{% if demo_on %}<form method="post"><input type="hidden" name="action" value="demo_clear"><button class="btn danger" type="submit">Clear Demo Data</button></form>
+{% else %}<form method="post"><input type="hidden" name="action" value="demo_load"><button class="btn ghost" type="submit">Load Labelled Demo Data</button></form>{% endif %}</div>
+<div class="card" style="margin-top:16px"><h3>Audit Log (recent)</h3>
+<div class="tablewrap"><table><tr><th>When</th><th>Action</th><th>Entity</th><th>Detail</th></tr>
+{% for l in logs %}<tr><td>{{ l.created_at }}</td><td>{{ l.action }}</td><td>{{ l.entity }} #{{ l.entity_id }}</td><td>{{ l.detail or '—' }}</td></tr>
+{% else %}<tr><td colspan="4" class="muted">No audit entries yet.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

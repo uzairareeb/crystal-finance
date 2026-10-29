@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Results for "{{ q }}"</h3>
+<h4>Transactions</h4>
+<div class="tablewrap"><table><tr><th>Code</th><th>Date</th><th>Type</th><th>Amount</th><th>Description</th></tr>
+{% for t in results %}<tr><td><a href="{{ url_for('tx.detail', tx_id=t.id) }}">{{ t.code }}</a></td><td>{{ fmt_date(t.tx_date) }}</td><td>{{ t.type }}</td><td>{{ fmt_money(t.amount_paisa) }}</td><td>{{ t.description or '—' }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No transactions found.</td></tr>{% endfor %}</table></div>
+<h4 style="margin-top:16px">People</h4>
+<ul>{% for p in people %}<li><a href="{{ url_for('people.statement', pid=p.id) }}">{{ p.name }}</a> ({{ p.entity_type }})</li>{% else %}<li class="muted">None.</li>{% endfor %}</ul>
+<h4>Projects</h4>
+<ul>{% for p in projects %}<li><a href="{{ url_for('people.project_statement', pid=p.id) }}">{{ p.name }}</a></li>{% else %}<li class="muted">None.</li>{% endfor %}</ul>
+</div>
+{% endblock %}

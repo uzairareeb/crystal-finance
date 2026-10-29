@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title or "Crystal Finance" }} — Crystal Finance</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/crystal.css') }}">
+<script src="{{ url_for('static', filename='js/crystal.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="logo">Crystal<span> Finance</span><small>Personal finance, clearly kept</small></div>
+  <div class="nav-group"><h4>Overview</h4>
+    <a class="nav" href="{{ url_for('main.dashboard_page') }}">Dashboard</a></div>
+  <div class="nav-group"><h4>Transactions</h4>
+    <a class="nav" href="{{ url_for('tx.all_tx') }}">All Transactions</a>
+    <a class="nav" href="{{ url_for('tx.received') }}">Money Received</a>
+    <a class="nav" href="{{ url_for('tx.paid') }}">Money Paid</a>
+    <a class="nav" href="{{ url_for('tx.transfers') }}">Transfers</a>
+    <a class="nav" href="{{ url_for('accounts.recurring_list') }}">Recurring Transactions</a></div>
+  <div class="nav-group"><h4>Accounts &amp; People</h4>
+    <a class="nav" href="{{ url_for('accounts.accounts_list') }}">My Accounts</a>
+    <a class="nav" href="{{ url_for('people.people_list') }}">People &amp; Companies</a>
+    <a class="nav" href="{{ url_for('people.projects_list') }}">Projects &amp; Clients</a></div>
+  <div class="nav-group"><h4>Outstanding Payments</h4>
+    <a class="nav" href="{{ url_for('accounts.receivables') }}">Money to Receive</a>
+    <a class="nav" href="{{ url_for('accounts.payables') }}">Money to Pay</a>
+    <a class="nav" href="{{ url_for('main.schedule') }}">Payment Schedule</a></div>
+  <div class="nav-group"><h4>Insights</h4>
+    <a class="nav" href="{{ url_for('reports.monthly') }}">Monthly Reports</a>
+    <a class="nav" href="{{ url_for('reports.annual') }}">Annual Reports</a>
+    <a class="nav" href="{{ url_for('reports.analytics') }}">Financial Analytics</a>
+    <a class="nav" href="{{ url_for('reports.categories') }}">Categories &amp; Budgets</a></div>
+  <div class="nav-group"><h4>Data Management</h4>
+    <a class="nav" href="{{ url_for('data.attachments_list') }}">Attachments &amp; Receipts</a>
+    <a class="nav" href="{{ url_for('data.export_page') }}">Export &amp; Backup</a>
+    <a class="nav" href="{{ url_for('data.trash') }}">Trash &amp; Recovery</a>
+    <a class="nav" href="{{ url_for('data.settings') }}">Settings</a></div>
+  <div class="nav-group"><h4>Account</h4>
+    <a class="nav" href="{{ url_for('main.notifications_page') }}">Notifications{% if notif_count %} ({{ notif_count }}){% endif %}</a>
+    <a class="nav" href="{{ url_for('auth.logout') }}">Sign out ({{ username }})</a></div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <button class="btn ghost small menu-btn" type="button" onclick="toggleSidebar()">Menu</button>
+    <h1>{{ title or "Crystal Finance" }}</h1>
+    <form class="searchbox" action="{{ url_for('main.search') }}" method="get">
+      <input type="search" name="q" placeholder="Search code, person, description..." value="{{ request.args.get('q','') }}">
+      <button class="btn small" type="submit">Search</button>
+    </form>
+    <form action="{{ url_for('main.dashboard_page') }}" method="get" style="display:flex;gap:6px">
+      <input type="number" name="year" value="{{ request.args.get('year','') }}" placeholder="Year" style="width:90px">
+      <input type="number" name="month" min="1" max="12" value="{{ request.args.get('month','') }}" placeholder="Month" style="width:80px">
+      <button class="btn ghost small" type="submit">Period</button>
+    </form>
+    <a class="bell" href="{{ url_for('main.notifications_page') }}" title="Notifications">&#128276;{% if notif_count %}<b>{{ notif_count }}</b>{% endif %}</a>
+    <button class="btn ghost small" type="button" onclick="toggleTheme()">Light / Dark</button>
+    <button class="btn" type="button" onclick="openQuickAdd()">+ Quick Add</button>
+  </div>
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}<div class="flash {% if cat == 'err' %}err{% endif %}">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  {% if must_change %}<div class="banner">Security warning: you are still using the default password. Change it in <a href="{{ url_for('data.settings') }}">Settings</a>.</div>{% endif %}
+  {% block content %}{% endblock %}
+</main>
+</div>
+<div class="modal" id="quick-add">
+  <div class="card">
+    <h2>Quick Add Transaction</h2>
+    <form action="{{ url_for('tx.new_tx') }}" method="post">
+      <div class="field"><label>Type</label>
+        <select name="type"><option value="received">Money Received</option><option value="paid">Money Paid</option><option value="transfer">Transfer</option></select></div>
+      <div class="field"><label>Amount (PKR)</label><input name="amount" required inputmode="decimal" placeholder="e.g. 50000"></div>
+      <div class="field"><label>Date</label><input type="date" name="tx_date" required></div>
+      <div class="field"><label>Description</label><input name="description" placeholder="What was this for?"></div>
+      <div class="field"><label>Status</label>
+        <select name="status"><option>Completed</option><option>Pending</option></select></div>
+      <p class="muted">For accounts, person, category and attachments, use the full form after saving, or <a href="{{ url_for('tx.new_tx') }}">open the full Add Transaction form</a>.</p>
+      <button class="btn" type="submit">Save</button>
+      <button class="btn ghost" type="button" onclick="closeQuickAdd()">Cancel</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

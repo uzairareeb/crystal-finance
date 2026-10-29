@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:720px">
+<form method="post" enctype="multipart/form-data" id="tx-form">
+  <div class="field"><label>Type *</label><select name="type" required>
+    {% for k,v in labels.items() %}<option value="{{ k }}" {% if tx and tx.type==k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="field"><label>Amount (PKR) *</label><input name="amount" required inputmode="decimal" value="{{ (tx.amount_paisa / 100) if tx else '' }}" placeholder="e.g. 50000"></div>
+  <div class="field"><label>Date *</label><input type="date" name="tx_date" required value="{{ tx.tx_date if tx else '' }}"></div>
+  <div class="field"><label>Source account</label><select name="source_account_id"><option value="">—</option>{% for a in lk.accounts %}<option value="{{ a.id }}" {% if tx and tx.source_account_id==a.id %}selected{% endif %}>{{ a.name }} ({{ a.type }})</option>{% endfor %}</select></div>
+  <div class="field dest-row"><label>Destination account (transfers only)</label><select name="dest_account_id"><option value="">—</option>{% for a in lk.accounts %}<option value="{{ a.id }}" {% if tx and tx.dest_account_id==a.id %}selected{% endif %}>{{ a.name }}</option>{% endfor %}</select></div>
+  <div class="field fee-row"><label>Transfer fee (PKR, optional — recorded separately, does not change the transfer amount)</label><input name="fee" inputmode="decimal" value="{{ (tx.fee_paisa / 100) if tx and tx.fee_paisa else '' }}"></div>
+  <div class="field"><label>Person / Company</label><select name="person_id"><option value="">—</option>{% for p in lk.people %}<option value="{{ p.id }}" {% if tx and tx.person_id==p.id %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select>
+    <span class="muted">New person? Add them first under People &amp; Companies.</span></div>
+  <div class="field"><label>Project / Client</label><select name="project_id"><option value="">—</option>{% for p in lk.projects %}<option value="{{ p.id }}" {% if tx and tx.project_id==p.id %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
+  <div class="field"><label>Category</label><select name="category_id"><option value="">—</option>{% for c in lk.categories %}<option value="{{ c.id }}" {% if tx and tx.category_id==c.id %}selected{% endif %}>{{ c.name }} ({{ c.kind }})</option>{% endfor %}</select></div>
+  <div class="field"><label>Payment method</label><select name="method"><option value="">—</option>{% for m in lk.methods %}<option {% if tx and tx.method==m %}selected{% endif %}>{{ m }}</option>{% endfor %}</select></div>
+  <div class="field"><label>Status</label><select name="status">{% for s in ['Completed','Pending','Cancelled'] %}<option {% if tx and tx.status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+    <span class="muted">Only Completed transactions affect balances. Pending never changes cash.</span></div>
+  <div class="field"><label>Reference</label><input name="reference" value="{{ tx.reference if tx else '' }}"></div>
+  <div class="field"><label>Invoice / Bill reference</label><input name="invoice_ref" value="{{ tx.invoice_ref if tx else '' }}"></div>
+  <div class="field"><label>Description</label><input name="description" value="{{ tx.description if tx else '' }}"></div>
+  <div class="field"><label>Notes</label><textarea name="notes">{{ tx.notes if tx else '' }}</textarea></div>
+  {% if not tx %}
+  <div class="field"><label>Allocate to (optional — partial payments)</label>
+    <select name="allocate_kind"><option value="">No allocation</option><option value="receivable">Receivable (money to receive)</option><option value="payable">Payable (money to pay)</option></select>
+    <input name="allocate_id" placeholder="Receivable / payable ID number" style="margin-top:6px"></div>
+  {% endif %}
+  <div class="field"><label>Receipt / proof attachment (image or PDF, max 5 MB)</label><input type="file" name="attachment" accept="image/*,.pdf"></div>
+  <button class="btn" type="submit">Save Transaction</button>
+  <a class="btn ghost" href="{{ url_for('tx.all_tx') }}">Cancel</a>
+</form>
+</div>
+{% endblock %}

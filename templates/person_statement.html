@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="cards">
+  <div class="card stat"><div class="label">Total Received from Them</div><div class="value pos">{{ fmt_money(received) }}</div></div>
+  <div class="card stat"><div class="label">Total Paid to Them</div><div class="value neg">{{ fmt_money(paid) }}</div></div>
+  <div class="card stat"><div class="label">They Owe Me (outstanding)</div><div class="value">{{ fmt_money(owes_me) }}</div></div>
+  <div class="card stat"><div class="label">I Owe Them (outstanding)</div><div class="value">{{ fmt_money(i_owe) }}</div></div>
+</div>
+<div class="card" style="margin-top:16px"><h3>Profile</h3>
+<p><b>{{ person.name }}</b> · {{ person.entity_type }}{% if person.org %} · {{ person.org }}{% endif %}</p>
+<p>Phone: {{ person.phone or '—' }} · Email: {{ person.email or '—' }} · Tags: {{ person.tags or '—' }}</p>
+<p>{{ person.notes or '' }}</p>
+{% if projects %}<p>Associated projects: {% for p in projects %}<a href="{{ url_for('people.project_statement', pid=p.id) }}">{{ p.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</p>{% endif %}</div>
+<div class="card" style="margin-top:16px"><h3>Outstanding</h3>
+<p>Receivables: {% for r in rec %}{{ fmt_money(r.outstanding_paisa) }} ({{ r.computed_status }}){% if not loop.last %}, {% endif %}{% else %}none{% endfor %}</p>
+<p>Payables: {% for r in pay %}{{ fmt_money(r.outstanding_paisa) }} ({{ r.computed_status }}){% if not loop.last %}, {% endif %}{% else %}none{% endfor %}</p></div>
+<div class="card" style="margin-top:16px"><h3>Transaction History</h3>
+<form method="get" class="filters"><input type="date" name="from" value="{{ f_from }}"><input type="date" name="to" value="{{ f_to }}">
+<select name="type"><option value="">All types</option>{% for t in ['received','paid','transfer','refund_received','refund_issued'] %}<option value="{{ t }}" {% if f_type==t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select>
+<button class="btn small" type="submit">Filter</button></form>
+<div class="tablewrap"><table><tr><th>Date</th><th>Code</th><th>Type</th><th>Amount</th><th>Status</th><th>Description</th></tr>
+{% for t in txs %}<tr><td>{{ fmt_date(t.tx_date) }}</td><td><a href="{{ url_for('tx.detail', tx_id=t.id) }}">{{ t.code }}</a></td><td>{{ t.type }}</td><td>{{ fmt_money(t.amount_paisa) }}</td><td>{{ t.status }}</td><td>{{ t.description or '—' }}</td></tr>
+{% else %}<tr><td colspan="6" class="muted">No transactions for this person yet.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

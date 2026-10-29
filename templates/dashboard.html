@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<p class="muted">Period: {{ month }}/{{ year }} &nbsp;|&nbsp; Grain:
+  <a href="?year={{ year }}&month={{ month }}&grain=daily">Daily</a> ·
+  <a href="?year={{ year }}&month={{ month }}&grain=weekly">Weekly</a> ·
+  <a href="?year={{ year }}&month={{ month }}&grain=monthly">Monthly</a> ·
+  <a href="?year={{ year }}&month={{ month }}&grain=yearly">Yearly</a>
+  &nbsp;|&nbsp; <a href="?year={{ year }}&month={{ month - 1 if month > 1 else 12 }}&grain={{ grain }}">Previous month</a></p>
+<div class="cards">
+  <div class="card stat"><a href="{{ url_for('tx.received') }}"><div class="label">Total Money Received (period)</div><div class="value pos">{{ fmt_money(d.period.received) }}</div><div class="sub">Previous period: {{ fmt_money(d.prev.received) }}</div></a></div>
+  <div class="card stat"><a href="{{ url_for('tx.paid') }}"><div class="label">Total Money Paid (period)</div><div class="value neg">{{ fmt_money(d.period.paid) }}</div><div class="sub">Previous period: {{ fmt_money(d.prev.paid) }}</div></a></div>
+  <div class="card stat"><div class="label">Net Cash Flow (period)</div><div class="value {% if d.period.net >= 0 %}pos{% else %}neg{% endif %}">{{ fmt_money(d.period.net) }}</div><div class="sub">Previous period: {{ fmt_money(d.prev.net) }}</div></div>
+  <div class="card stat"><a href="{{ url_for('accounts.accounts_list') }}"><div class="label">Available Balance (all accounts)</div><div class="value">{{ fmt_money(d.available) }}</div><div class="sub">Opening balances + completed ledger only</div></a></div>
+  <div class="card stat"><a href="{{ url_for('accounts.receivables') }}"><div class="label">Money to Receive</div><div class="value">{{ fmt_money(d.to_receive) }}</div><div class="sub">Outstanding receivables, not cash yet</div></a></div>
+  <div class="card stat"><a href="{{ url_for('accounts.payables') }}"><div class="label">Money to Pay</div><div class="value">{{ fmt_money(d.to_pay) }}</div><div class="sub">Outstanding payables, not paid yet</div></a></div>
+</div>
+<div class="grid2">
+  <div class="card"><h3>Received vs Paid</h3><canvas id="cf-chart" height="200"></canvas></div>
+  <div class="card"><h3>Account Balances</h3>
+    {% if accounts %}<div class="tablewrap"><table><tr><th>Account</th><th>Type</th><th>Balance</th></tr>
+    {% for a in accounts %}<tr><td>{{ a.name }}</td><td>{{ a.type }}</td><td>{{ fmt_money(bal.get(a.id, 0)) }}</td></tr>{% endfor %}</table></div>
+    {% else %}<p class="muted">No accounts yet. <a href="{{ url_for('accounts.accounts_list') }}">Add your first account</a>.</p>{% endif %}</div>
+</div>
+<div class="grid2">
+  <div class="card"><h3>Recent Transactions</h3>
+    {% if recent %}<div class="tablewrap"><table><tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th></tr>
+    {% for t in recent %}<tr><td>{{ fmt_date(t.tx_date) }}</td><td><a href="{{ url_for('tx.detail', tx_id=t.id) }}">{{ t.code }}</a> {{ t.type }}</td><td>{{ fmt_money(t.amount_paisa) }}</td><td>{{ t.status }}</td></tr>{% endfor %}</table></div>
+    {% else %}<p class="muted">No transactions yet. Use Quick Add above.</p>{% endif %}</div>
+  <div class="card"><h3>Overdue Receivables &amp; Payables</h3>
+    {% if overdue %}<div class="tablewrap"><table><tr><th>Due</th><th>Outstanding</th></tr>
+    {% for r in overdue %}<tr><td>{{ fmt_date(r.due_date) }}</td><td class="neg">{{ fmt_money(r.outstanding_paisa) }}</td></tr>{% endfor %}</table></div>
+    {% else %}<p class="muted">Nothing overdue. Good.</p>{% endif %}
+    <h3 style="margin-top:18px">Upcoming Commitments</h3>
+    {% if upcoming %}<ul>{% for r in upcoming %}<li>{{ fmt_date(r.due_date) }} — {{ fmt_money(r.outstanding_paisa) }} ({{ r.computed_status }})</li>{% endfor %}</ul>
+    {% else %}<p class="muted">No upcoming commitments.</p>{% endif %}</div>
+</div>
+<div class="grid2">
+  <div class="card"><h3>Income by Source (period)</h3>
+    {% if income_src %}<div class="tablewrap"><table><tr><th>Person</th><th>Received</th></tr>
+    {% for r in income_src %}<tr><td>{{ people.get(r.gid, 'Unassigned') }}</td><td>{{ fmt_money(r.total) }}</td></tr>{% endfor %}</table></div>
+    {% else %}<p class="muted">No income in this period.</p>{% endif %}</div>
+  <div class="card"><h3>Expenses by Category (period)</h3>
+    {% if exp_cat %}<div class="tablewrap"><table><tr><th>Category</th><th>Paid</th></tr>
+    {% for r in exp_cat %}<tr><td>{{ cats.get(r.gid, 'Unassigned') }}</td><td>{{ fmt_money(r.total) }}</td></tr>{% endfor %}</table></div>
+    {% else %}<p class="muted">No expenses in this period.</p>{% endif %}</div>
+</div>
+<div class="card" style="margin-top:16px"><h3>Quick Actions</h3>
+  <a class="btn" href="{{ url_for('tx.new_tx') }}">Receive Money</a>
+  <a class="btn ghost" href="{{ url_for('tx.new_tx') }}">Make a Payment</a>
+  <a class="btn ghost" href="{{ url_for('accounts.accounts_list') }}">Manage Accounts</a>
+  <a class="btn ghost" href="{{ url_for('reports.monthly') }}">Monthly Report</a></div>
+<script>
+var ctx=document.getElementById("cf-chart");
+if(ctx){new Chart(ctx,{type:"bar",data:{labels:{{ series|map(attribute="label")|list|tojson }},datasets:[
+ {label:"Received",data:{{ series|map(attribute="received")|list|tojson }},backgroundColor:"rgba(30,138,90,.7)"},
+ {label:"Paid",data:{{ series|map(attribute="paid")|list|tojson }},backgroundColor:"rgba(192,57,43,.7)"}]},
+ options:{responsive:true,plugins:{tooltip:{callbacks:{label:function(c){return c.dataset.label+": PKR "+(c.raw/100).toLocaleString(undefined,{minimumFractionDigits:2})}}}}}})}
+</script>
+{% endblock %}

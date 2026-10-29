@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Notifications</h3>
+{% for i in items %}<div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+  <div><span class="pill {% if i.kind=='Overdue' %}red{% elif i.kind=='Due soon' %}amber{% else %}green{% endif %}">{{ i.kind }}</span> {{ i.text }}</div>
+  <form class="inline-form" method="post"><input type="hidden" name="key" value="{{ i.key }}"><button class="btn ghost small" type="submit">Dismiss</button></form>
+</div>{% else %}<p class="muted">All clear — nothing due or overdue.</p>{% endfor %}</div>
+{% endblock %}

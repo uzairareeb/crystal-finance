@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Add Person / Company</h3>
+<form method="post" class="filters">
+  <input name="name" placeholder="Name *" required>
+  <select name="entity_type"><option>Person</option><option>Client</option><option>Company</option><option>Contractor</option><option>Developer</option><option>Agency</option></select>
+  <input name="phone" placeholder="Phone"><input name="email" placeholder="Email"><input name="org" placeholder="Organisation">
+  <input name="tags" placeholder="Tags, comma separated"><input name="notes" placeholder="Notes">
+  <button class="btn" type="submit">Add</button>
+</form></div>
+<div class="card" style="margin-top:16px"><h3>Directory — {{ show }}</h3>
+<p><a href="?show=active">Active</a> · <a href="?show=archived">Archived</a></p>
+<div class="tablewrap"><table><tr><th>Name</th><th>Type</th><th>Phone</th><th>Email</th><th>Tags</th><th></th></tr>
+{% for r in rows %}<tr><td><a href="{{ url_for('people.statement', pid=r.id) }}">{{ r.name }}</a></td><td>{{ r.entity_type }}</td><td>{{ r.phone or '—' }}</td><td>{{ r.email or '—' }}</td><td>{{ r.tags or '—' }}</td>
+<td>{% if r.active %}<form class="inline-form" method="post" action="{{ url_for('people.archive_person', pid=r.id) }}"><button class="btn ghost small" type="submit">Archive</button></form>
+{% else %}<form class="inline-form" method="post" action="{{ url_for('people.unarchive_person', pid=r.id) }}"><button class="btn ghost small" type="submit">Restore</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="muted">No people yet.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

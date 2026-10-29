@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Add Project</h3>
+<form method="post" class="filters">
+  <input name="name" placeholder="Project name *" required>
+  <select name="client_id"><option value="">No client</option>{% for p in people %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select>
+  <input type="date" name="start_date"><input name="expected" placeholder="Expected value (PKR)" inputmode="decimal">
+  <input name="payment_schedule" placeholder="Payment schedule, e.g. 50% advance, 50% on delivery">
+  <select name="status"><option>Active</option><option>Completed</option><option>On Hold</option><option>Cancelled</option></select>
+  <input name="notes" placeholder="Notes">
+  <button class="btn" type="submit">Add Project</button>
+</form>
+<p class="muted">Contract value is never counted as income. Only cash actually received counts.</p></div>
+<div class="card" style="margin-top:16px"><h3>Projects</h3>
+<div class="tablewrap"><table><tr><th>Project</th><th>Status</th><th>Expected Value</th><th>Received (cash)</th><th>Paid Out</th><th>Cash Profit</th><th>Remaining to Collect</th></tr>
+{% for r in rows %}<tr><td><a href="{{ url_for('people.project_statement', pid=r.id) }}">{{ r.name }}</a></td><td>{{ r.status }}</td>
+<td>{{ fmt_money(r.expected_paisa) }}</td><td>{{ fmt_money(r.received_paisa) }}</td><td>{{ fmt_money(r.paid_paisa) }}</td>
+<td class="{% if r.cash_profit >= 0 %}pos{% else %}neg{% endif %}">{{ fmt_money(r.cash_profit) }}</td><td>{{ fmt_money(r.remaining_paisa) }}</td></tr>
+{% else %}<tr><td colspan="7" class="muted">No projects yet.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

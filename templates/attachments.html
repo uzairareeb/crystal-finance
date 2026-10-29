@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Attachments &amp; Receipts</h3>
+<p class="muted">Files are stored inside your database and are only accessible after sign-in — never public.</p>
+<div class="tablewrap"><table><tr><th>File</th><th>Linked To</th><th>Record ID</th><th>Uploaded</th><th></th></tr>
+{% for r in rows %}<tr><td><a href="{{ url_for('data.attachment_download', aid=r.id) }}">{{ r.filename }}</a></td>
+<td>{{ r.owner_type }}</td><td>{{ r.owner_id }}</td><td>{{ fmt_date(r.uploaded_at[:10]) }}</td>
+<td><form class="inline-form" method="post" action="{{ url_for('data.attachment_delete', aid=r.id) }}" onsubmit="return confirm('Delete this attachment?')"><button class="btn danger small" type="submit">Delete</button></form></td></tr>
+{% else %}<tr><td colspan="5" class="muted">No attachments yet.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

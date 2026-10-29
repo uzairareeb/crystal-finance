@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in — Crystal Finance</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/crystal.css') }}">
+<script src="{{ url_for('static', filename='js/crystal.js') }}"></script></head>
+<body>
+<div class="login-wrap"><div class="card">
+  <div class="logo" style="font-size:28px">Crystal<span> Finance</span></div>
+  <p class="muted">Private personal finance tracking. Sign in to continue.</p>
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}<div class="flash {% if cat == 'err' %}err{% endif %}">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  <form method="post" style="margin-top:16px">
+    <div class="field"><label>Username</label><input name="username" required autofocus></div>
+    <div class="field"><label>Password</label><input type="password" name="password" required></div>
+    <button class="btn" type="submit" style="width:100%">Sign in</button>
+  </form>
+  <p class="muted" style="font-size:13px;margin-top:14px">First run: username <b>admin</b>, password <b>Crystal@123</b>. Change it in Settings after signing in.</p>
+</div></div>
+</body></html>

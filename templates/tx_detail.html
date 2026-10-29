@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:720px">
+  <p><b>Code:</b> {{ tx.code }} &nbsp;|&nbsp; <b>Type:</b> {{ labels.get(tx.type, tx.type) }} &nbsp;|&nbsp; <b>Status:</b> {{ tx.status }}</p>
+  <p><b>Amount:</b> {{ fmt_money(tx.amount_paisa) }}{% if tx.fee_paisa %} &nbsp;|&nbsp; <b>Transfer fee:</b> {{ fmt_money(tx.fee_paisa) }}{% endif %}</p>
+  <p><b>Date:</b> {{ fmt_date(tx.tx_date) }} &nbsp;|&nbsp; <b>Method:</b> {{ tx.method or '—' }}</p>
+  <p><b>Person:</b> {{ person }} &nbsp;|&nbsp; <b>Project:</b> {{ project }} &nbsp;|&nbsp; <b>Category:</b> {{ category }}</p>
+  <p><b>From account:</b> {{ source }} &nbsp;|&nbsp; <b>To account:</b> {{ dest }}</p>
+  <p><b>Reference:</b> {{ tx.reference or '—' }} &nbsp;|&nbsp; <b>Invoice ref:</b> {{ tx.invoice_ref or '—' }}</p>
+  <p><b>Description:</b> {{ tx.description or '—' }}</p>
+  <p><b>Notes:</b> {{ tx.notes or '—' }}</p>
+  <p class="muted">Created {{ tx.created_at }} · Updated {{ tx.updated_at }}</p>
+  {% if allocs %}<h3>Allocations</h3><ul>{% for a in allocs %}<li>{{ a.kind }} #{{ a.target_id }} — {{ fmt_money(a.amount_paisa) }}</li>{% endfor %}</ul>{% endif %}
+  {% if atts %}<h3>Attachments</h3><ul>{% for a in atts %}<li><a href="{{ url_for('data.attachment_download', aid=a.id) }}">{{ a.filename }}</a> ({{ a.uploaded_at }})</li>{% endfor %}</ul>{% endif %}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+    <a class="btn" href="{{ url_for('tx.edit_tx', tx_id=tx.id) }}">Edit</a>
+    {% if tx.status != 'Voided' %}<form class="inline-form" method="post" action="{{ url_for('tx.void_tx', tx_id=tx.id) }}" onsubmit="return confirm('Void this transaction? It will stop affecting all totals.')"><button class="btn ghost" type="submit">Void</button></form>
+    {% else %}<form class="inline-form" method="post" action="{{ url_for('tx.restore_tx', tx_id=tx.id) }}"><button class="btn ghost" type="submit">Restore as Pending</button></form>{% endif %}
+    <form class="inline-form" method="post" action="{{ url_for('tx.delete_tx', tx_id=tx.id) }}" onsubmit="return confirm('Permanently delete this transaction? Prefer Void if you may need it back.')"><button class="btn danger" type="submit">Delete</button></form>
+  </div>
+</div>
+{% endblock %}

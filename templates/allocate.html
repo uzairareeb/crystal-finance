@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:600px"><h3>Record Payment</h3>
+<p>Outstanding: <b>{{ fmt_money(rem) }}</b></p>
+<form method="post">
+  <div class="field"><label>Amount (PKR) * — partial payments allowed</label><input name="amount" required inputmode="decimal" placeholder="e.g. {{ rem // 100 }}"></div>
+  <div class="field"><label>Date</label><input type="date" name="tx_date"></div>
+  <div class="field"><label>Account *</label><select name="account_id" required>{% for a in accounts %}<option value="{{ a.id }}">{{ a.name }} ({{ a.type }})</option>{% endfor %}</select></div>
+  <div class="field"><label>Description</label><input name="description"></div>
+  <button class="btn" type="submit">Record as Completed</button>
+  <a class="btn ghost" href="{{ url_for('accounts.receivables' if tx_type=='received' else 'accounts.payables') }}">Cancel</a>
+</form>
+<p class="muted">The payment is created as a Completed {{ tx_type }} transaction and linked to this record, so it reduces the outstanding by exactly the allocated amount and is never double-counted.</p>
+</div>
+{% endblock %}

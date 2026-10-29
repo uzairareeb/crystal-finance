@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="cards">
+  <div class="card stat"><div class="label">Expected Project Value</div><div class="value">{{ fmt_money(proj.expected_paisa) }}</div><div class="sub">Contract value — not income until received</div></div>
+  <div class="card stat"><div class="label">Cash Received</div><div class="value pos">{{ fmt_money(proj.received_paisa) }}</div></div>
+  <div class="card stat"><div class="label">Cash Paid Out</div><div class="value neg">{{ fmt_money(proj.paid_paisa) }}</div></div>
+  <div class="card stat"><div class="label">Cash Profit</div><div class="value {% if proj.cash_profit >= 0 %}pos{% else %}neg{% endif %}">{{ fmt_money(proj.cash_profit) }}</div><div class="sub">Received minus paid (cash only)</div></div>
+</div>
+<div class="card" style="margin-top:16px"><h3>{{ proj.name }}</h3>
+<p>Client: {{ client }} · Status: {{ proj.status }} · Start: {{ fmt_date(proj.start_date) }}</p>
+<p>Payment schedule: {{ proj.payment_schedule or '—' }}</p>
+<p>Remaining to collect: {{ fmt_money(proj.remaining_paisa) }}</p>
+<p>{{ proj.notes or '' }}</p>
+<form class="inline-form" method="post" action="{{ url_for('people.project_status', pid=proj.id) }}">
+  <select name="status" style="width:auto"><option {% if proj.status=='Active' %}selected{% endif %}>Active</option><option {% if proj.status=='Completed' %}selected{% endif %}>Completed</option><option {% if proj.status=='On Hold' %}selected{% endif %}>On Hold</option><option {% if proj.status=='Cancelled' %}selected{% endif %}>Cancelled</option></select>
+  <button class="btn small" type="submit">Update Status</button></form></div>
+<div class="card" style="margin-top:16px"><h3>Transactions</h3>
+<div class="tablewrap"><table><tr><th>Date</th><th>Code</th><th>Type</th><th>Amount</th><th>Status</th></tr>
+{% for t in txs %}<tr><td>{{ fmt_date(t.tx_date) }}</td><td><a href="{{ url_for('tx.detail', tx_id=t.id) }}">{{ t.code }}</a></td><td>{{ t.type }}</td><td>{{ fmt_money(t.amount_paisa) }}</td><td>{{ t.status }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No transactions for this project yet.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

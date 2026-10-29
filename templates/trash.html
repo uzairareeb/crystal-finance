@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Voided Transactions</h3>
+<div class="tablewrap"><table><tr><th>Code</th><th>Date</th><th>Type</th><th>Amount</th><th></th></tr>
+{% for t in voided %}<tr><td><a href="{{ url_for('tx.detail', tx_id=t.id) }}">{{ t.code }}</a></td><td>{{ fmt_date(t.tx_date) }}</td><td>{{ t.type }}</td><td>{{ fmt_money(t.amount_paisa) }}</td>
+<td><form class="inline-form" method="post" action="{{ url_for('tx.restore_tx', tx_id=t.id) }}"><button class="btn ghost small" type="submit">Restore as Pending</button></form></td></tr>
+{% else %}<tr><td colspan="5" class="muted">No voided transactions.</td></tr>{% endfor %}</table></div></div>
+<div class="card" style="margin-top:16px"><h3>Archived People</h3>
+<ul>{% for p in archived_people %}<li>{{ p.name }} — <form class="inline-form" method="post" action="{{ url_for('people.unarchive_person', pid=p.id) }}"><button class="btn ghost small" type="submit">Restore</button></form></li>{% else %}<li class="muted">None.</li>{% endfor %}</ul></div>
+<div class="card" style="margin-top:16px"><h3>Archived Accounts</h3>
+<ul>{% for a in archived_accounts %}<li>{{ a.name }}</li>{% else %}<li class="muted">None.</li>{% endfor %}</ul></div>
+{% endblock %}

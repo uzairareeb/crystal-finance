@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Financial Analytics — {{ year }}</h3>
+<form method="get" class="filters"><input type="number" name="year" value="{{ year }}"><button class="btn small" type="submit">Go</button></form>
+<canvas id="an-chart" height="120"></canvas></div>
+<div class="grid2">
+  <div class="card"><h3>Income by Source (year)</h3><div class="tablewrap"><table><tr><th>Person</th><th>Received</th></tr>
+  {% for r in income_src %}<tr><td>{{ people.get(r.gid,'Unassigned') }}</td><td>{{ fmt_money(r.total) }}</td></tr>{% else %}<tr><td colspan="2" class="muted">None.</td></tr>{% endfor %}</table></div></div>
+  <div class="card"><h3>Expenses by Category (year)</h3><div class="tablewrap"><table><tr><th>Category</th><th>Paid</th></tr>
+  {% for r in exp_cat %}<tr><td>{{ cats.get(r.gid,'Unassigned') }}</td><td>{{ fmt_money(r.total) }}</td></tr>{% else %}<tr><td colspan="2" class="muted">None.</td></tr>{% endfor %}</table></div></div>
+</div>
+<script>
+var ctx=document.getElementById("an-chart");
+if(ctx){new Chart(ctx,{type:"line",data:{labels:{{ series|map(attribute="label")|list|tojson }},datasets:[
+ {label:"Received",data:{{ series|map(attribute="received")|list|tojson }},borderColor:"#1e8a5a",backgroundColor:"rgba(30,138,90,.2)",fill:true},
+ {label:"Paid",data:{{ series|map(attribute="paid")|list|tojson }},borderColor:"#c0392b",backgroundColor:"rgba(192,57,43,.2)",fill:true}]},
+ options:{responsive:true,plugins:{tooltip:{callbacks:{label:function(c){return c.dataset.label+": PKR "+(c.raw/100).toLocaleString(undefined,{minimumFractionDigits:2})}}}}}})}
+</script>
+{% endblock %}

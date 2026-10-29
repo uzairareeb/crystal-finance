@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Monthly Report — {{ month }}/{{ year }}</h3>
+<form method="get" class="filters"><input type="number" name="year" value="{{ year }}"><input type="number" name="month" min="1" max="12" value="{{ month }}"><button class="btn small" type="submit">Go</button>
+<a class="btn ghost small" href="?year={{ year }}&month={{ month - 1 if month > 1 else 12 }}">Previous</a>
+<a class="btn ghost small" href="?year={{ year + 1 if month==12 else year }}&month={{ 1 if month==12 else month + 1 }}">Next</a>
+<a class="btn ghost small" href="javascript:window.print()">Print</a></form></div>
+<div class="cards">
+  <div class="card stat"><div class="label">Opening Balance ({{ fmt_date(rep.start) }})</div><div class="value">{{ fmt_money(rep.opening) }}</div></div>
+  <div class="card stat"><div class="label">Money Received</div><div class="value pos">{{ fmt_money(rep.received) }}</div></div>
+  <div class="card stat"><div class="label">Money Paid</div><div class="value neg">{{ fmt_money(rep.paid) }}</div></div>
+  <div class="card stat"><div class="label">Net Cash Flow</div><div class="value {% if rep.net >= 0 %}pos{% else %}neg{% endif %}">{{ fmt_money(rep.net) }}</div></div>
+  <div class="card stat"><div class="label">Closing Balance ({{ fmt_date(rep.end) }})</div><div class="value">{{ fmt_money(rep.closing) }}</div><div class="sub">Opening + net (reconciles with ledger)</div></div>
+  <div class="card stat"><div class="label">Outstanding at Period End</div><div class="value">{{ fmt_money(rep.receivables_end) }}</div><div class="sub">To receive · To pay: {{ fmt_money(rep.payables_end) }}</div></div>
+</div>
+<div class="grid2">
+  <div class="card"><h3>Income by Source</h3><div class="tablewrap"><table><tr><th>Person</th><th>Received</th></tr>
+  {% for r in income_src %}<tr><td>{{ people.get(r.gid,'Unassigned') }}</td><td>{{ fmt_money(r.total) }}</td></tr>{% else %}<tr><td colspan="2" class="muted">None.</td></tr>{% endfor %}</table></div></div>
+  <div class="card"><h3>Expenses by Category</h3><div class="tablewrap"><table><tr><th>Category</th><th>Paid</th></tr>
+  {% for r in exp_cat %}<tr><td>{{ cats.get(r.gid,'Unassigned') }}</td><td>{{ fmt_money(r.total) }}</td></tr>{% else %}<tr><td colspan="2" class="muted">None.</td></tr>{% endfor %}</table></div></div>
+</div>
+<div class="card" style="margin-top:16px"><h3>Account Closing Balances</h3>
+<div class="tablewrap"><table><tr><th>Account</th><th>Closing Balance</th></tr>
+{% for a in rep.accounts %}<tr><td>{{ a.name }}</td><td>{{ fmt_money(rep.closing_bal.get(a.id, 0)) }}</td></tr>{% endfor %}</table></div></div>
+<div class="card" style="margin-top:16px"><h3>Client / Project Summaries (month)</h3>
+<div class="tablewrap"><table><tr><th>Project</th><th>Received</th><th>Paid</th></tr>
+{% for p in proj_rows %}<tr><td>{{ p.name }}</td><td>{{ fmt_money(p.received) }}</td><td>{{ fmt_money(p.paid) }}</td></tr>{% else %}<tr><td colspan="3" class="muted">No project activity this month.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

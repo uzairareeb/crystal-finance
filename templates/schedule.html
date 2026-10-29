@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Money to Receive — upcoming</h3>
+<div class="tablewrap"><table><tr><th>Due</th><th>Person</th><th>Outstanding</th><th>Status</th></tr>
+{% for r in rec %}<tr><td>{{ fmt_date(r.due_date) }}</td><td>{{ people.get(r.person_id,'—') }}</td><td>{{ fmt_money(r.outstanding_paisa) }}</td><td>{{ r.computed_status }}</td></tr>
+{% else %}<tr><td colspan="4" class="muted">None.</td></tr>{% endfor %}</table></div></div>
+<div class="card" style="margin-top:16px"><h3>Money to Pay — upcoming</h3>
+<div class="tablewrap"><table><tr><th>Due</th><th>Person</th><th>Outstanding</th><th>Status</th></tr>
+{% for r in pay %}<tr><td>{{ fmt_date(r.due_date) }}</td><td>{{ people.get(r.person_id,'—') }}</td><td>{{ fmt_money(r.outstanding_paisa) }}</td><td>{{ r.computed_status }}</td></tr>
+{% else %}<tr><td colspan="4" class="muted">None.</td></tr>{% endfor %}</table></div></div>
+<div class="card" style="margin-top:16px"><h3>Recurring — next due</h3>
+<div class="tablewrap"><table><tr><th>Rule</th><th>Next Due</th><th>Amount</th></tr>
+{% for r in recs %}<tr><td>{{ r.name }}</td><td>{{ fmt_date(r.next_due) }}</td><td>{{ fmt_money(r.amount_paisa) }}</td></tr>
+{% else %}<tr><td colspan="3" class="muted">No active recurring rules.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

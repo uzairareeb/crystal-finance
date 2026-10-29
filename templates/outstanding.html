@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Add {% if table=='receivables' %}Receivable{% else %}Payable{% endif %}</h3>
+<form method="post" enctype="multipart/form-data" class="filters">
+  <select name="person_id"><option value="">Select person *</option>{% for p in people %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select>
+  <select name="project_id"><option value="">No project</option>{% for p in projects %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select>
+  <input name="original" placeholder="Amount (PKR) *" required inputmode="decimal">
+  <input type="date" name="due_date">
+  {% if table == 'receivables' %}<input name="invoice_ref" placeholder="Invoice reference">{% else %}<input name="description" placeholder="Description *">{% endif %}
+  <input name="notes" placeholder="Notes"><input type="file" name="attachment" accept="image/*,.pdf">
+  <button class="btn" type="submit">Add</button>
+</form>
+<p class="muted">A {{ 'receivable' if table=='receivables' else 'payable' }} is only a plan — it never changes your available cash until a payment is recorded against it.</p></div>
+<div class="card" style="margin-top:16px"><h3>{{ title }}</h3>
+<div class="tablewrap"><table><tr><th>ID</th><th>Person</th><th>{% if table=='receivables' %}Invoice{% else %}Description{% endif %}</th><th>Original</th><th>Received / Paid</th><th>Outstanding</th><th>Due</th><th>Status</th><th></th></tr>
+{% for r in rows %}<tr><td>{{ r.id }}</td><td>{{ pmap.get(r.person_id, '—') }}</td>
+<td>{% if table=='receivables' %}{{ r.invoice_ref or '—' }}{% else %}{{ r.description or '—' }}{% endif %}</td>
+<td>{{ fmt_money(r.original_paisa) }}</td><td>{{ fmt_money(r.paid_paisa) }}</td>
+<td><b>{{ fmt_money(r.outstanding_paisa) }}</b></td><td>{{ fmt_date(r.due_date) }}</td>
+<td><span class="pill {% if r.computed_status=='Paid' %}green{% elif r.computed_status=='Overdue' %}red{% elif r.computed_status=='Partially Paid' %}amber{% endif %}">{{ r.computed_status }}</span></td>
+<td>{% if r.outstanding_paisa > 0 %}
+{% if table == 'receivables' %}<a href="{{ url_for('accounts.pay_receivable', rid=r.id) }}">Record payment</a>{% else %}<a href="{{ url_for('accounts.pay_payable', pid=r.id) }}">Record payment</a>{% endif %} ·
+{% endif %}
+{% if table == 'receivables' %}<form class="inline-form" method="post" action="{{ url_for('accounts.cancel_receivable', rid=r.id) }}" onsubmit="return confirm('Cancel this record? The remainder will be excluded.')"><button class="btn ghost small" type="submit">Cancel</button></form>
+{% else %}<form class="inline-form" method="post" action="{{ url_for('accounts.cancel_payable', pid=r.id) }}" onsubmit="return confirm('Cancel this record? The remainder will be excluded.')"><button class="btn ghost small" type="submit">Cancel</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="9" class="muted">None yet.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

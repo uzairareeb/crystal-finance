@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card"><h3>Add Recurring Rule</h3>
+<form method="post" class="filters">
+  <input name="name" placeholder="Name, e.g. Monthly client retainer *" required>
+  <select name="kind"><option value="received">Money in</option><option value="paid">Money out</option></select>
+  <input name="amount" placeholder="Amount (PKR) *" required inputmode="decimal">
+  <select name="frequency"><option value="weekly">Weekly</option><option value="monthly" selected>Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select>
+  <input type="date" name="start_date"><input type="date" name="end_date">
+  <select name="person_id"><option value="">No person</option>{% for p in people %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select>
+  <select name="category_id"><option value="">No category</option>{% for c in cats %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select>
+  <select name="account_id"><option value="">No account</option>{% for a in accts %}<option value="{{ a.id }}">{{ a.name }}</option>{% endfor %}</select>
+  <button class="btn" type="submit">Add Rule</button>
+</form></div>
+<div class="card" style="margin-top:16px"><h3>Recurring Rules</h3>
+<div class="tablewrap"><table><tr><th>Name</th><th>Direction</th><th>Amount</th><th>Frequency</th><th>Next Due</th><th>Person</th><th>Status</th><th></th></tr>
+{% for r in rows %}<tr><td>{{ r.name }}</td><td>{{ 'In' if r.kind=='received' else 'Out' }}</td><td>{{ fmt_money(r.amount_paisa) }}</td>
+<td>{{ r.frequency }}</td><td>{{ fmt_date(r.next_due) }}</td><td>{{ pmap.get(r.person_id, '—') }}</td>
+<td><span class="pill {% if r.active %}green{% endif %}">{{ 'Active' if r.active else 'Paused' }}</span></td>
+<td><form class="inline-form" method="post" action="{{ url_for('accounts.generate_recurring', rid=r.id) }}"><button class="btn small" type="submit">Generate draft</button></form>
+<form class="inline-form" method="post" action="{{ url_for('accounts.toggle_recurring', rid=r.id) }}"><button class="btn ghost small" type="submit">{{ 'Pause' if r.active else 'Resume' }}</button></form></td></tr>
+{% else %}<tr><td colspan="8" class="muted">No recurring rules yet.</td></tr>{% endfor %}</table></div>
+<p class="muted">Generate draft creates a <b>Pending</b> transaction only — it never affects balances until you confirm it as Completed.</p></div>
+{% endblock %}

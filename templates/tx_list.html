@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h3>Filters</h3>
+  <form method="get" class="filters">
+    <input type="search" name="q" placeholder="Search" value="{{ f.get('q','') }}">
+    <select name="type"><option value="">All types</option>{% for k,v in labels.items() %}<option value="{{ k }}" {% if f.get('type')==k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+    <select name="status"><option value="">All statuses</option>{% for s in ['Completed','Pending','Cancelled','Voided'] %}<option {% if f.get('status')==s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+    <select name="account"><option value="">All accounts</option>{% for a in lk.accounts %}<option value="{{ a.id }}" {% if f.get('account')==a.id|string %}selected{% endif %}>{{ a.name }}</option>{% endfor %}</select>
+    <select name="person"><option value="">All people</option>{% for p in lk.people %}<option value="{{ p.id }}" {% if f.get('person')==p.id|string %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select>
+    <select name="category"><option value="">All categories</option>{% for c in lk.categories %}<option value="{{ c.id }}" {% if f.get('category')==c.id|string %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select>
+    <input type="date" name="from" value="{{ f.get('from','') }}"><input type="date" name="to" value="{{ f.get('to','') }}">
+    <input name="min_amount" placeholder="Min PKR" value="{{ f.get('min_amount','') }}">
+    <input name="max_amount" placeholder="Max PKR" value="{{ f.get('max_amount','') }}">
+    <select name="sort"><option value="date_desc" {% if sort=='date_desc' %}selected{% endif %}>Newest first</option><option value="date_asc" {% if sort=='date_asc' %}selected{% endif %}>Oldest first</option><option value="amount_desc" {% if sort=='amount_desc' %}selected{% endif %}>Amount high to low</option><option value="amount_asc" {% if sort=='amount_asc' %}selected{% endif %}>Amount low to high</option><option value="updated" {% if sort=='updated' %}selected{% endif %}>Recently updated</option></select>
+    <button class="btn small" type="submit">Apply</button>
+    <a class="btn ghost small" href="{{ request.path }}">Clear</a>
+  </form>
+  <p class="muted">{{ total }} transaction(s) found.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Code</th><th>Date</th><th>Type</th><th>Person</th><th>Category</th><th>Amount</th><th>Status</th><th></th></tr>
+    {% for t in rows %}<tr>
+      <td><a href="{{ url_for('tx.detail', tx_id=t.id) }}">{{ t.code }}</a></td>
+      <td>{{ fmt_date(t.tx_date) }}</td><td>{{ labels.get(t.type, t.type) }}</td>
+      <td>{{ people.get(t.person_id, '—') }}</td><td>{{ cats.get(t.category_id, '—') }}</td>
+      <td>{{ fmt_money(t.amount_paisa) }}</td>
+      <td><span class="pill {% if t.status=='Completed' %}green{% elif t.status in ['Cancelled','Voided'] %}red{% else %}amber{% endif %}">{{ t.status }}</span></td>
+      <td><a href="{{ url_for('tx.edit_tx', tx_id=t.id) }}">Edit</a></td>
+    </tr>{% else %}<tr><td colspan="8" class="muted">No transactions match these filters.</td></tr>{% endfor %}
+  </table></div>
+  <div class="pager">
+    {% if page > 1 %}<a class="btn ghost small" href="?page={{ page - 1 }}">Previous</a>{% endif %}
+    <span class="muted">Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="btn ghost small" href="?page={{ page + 1 }}">Next</a>{% endif %}
+    <a class="btn ghost small" href="{{ url_for('data.export_page') }}">Export filtered results</a>
+  </div>
+</div>
+{% endblock %}
