@@ -26,7 +26,7 @@ def _period():
 @bp.route("/")
 @login_required
 def index():
-    return redirect(url_for("main.dashboard"))
+    return redirect(url_for("main.dashboard_page"))
 
 
 @bp.route("/dashboard")

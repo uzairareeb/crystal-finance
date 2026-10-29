@@ -162,6 +162,14 @@ class AppTest(unittest.TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertIn("/login", r.headers["Location"])
 
+    def test_index_redirects_to_dashboard(self):
+        # Regression: index() once used url_for("main.dashboard") which does
+        # not exist (endpoint is main.dashboard_page) -> 500 after login.
+        self.client.post("/login", data={"username": "admin", "password": "Crystal@123"})
+        r = self.client.get("/", follow_redirects=False)
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(r.headers["Location"].endswith("/dashboard"), r.headers["Location"])
+
     def test_login_and_pages(self):
         r = self.client.post("/login", data={"username": "admin", "password": "Crystal@123"},
                              follow_redirects=True)
