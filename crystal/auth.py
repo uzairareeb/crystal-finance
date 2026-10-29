@@ -1,4 +1,5 @@
 """Single-owner authentication. Every route except /login is protected."""
+import os
 from functools import wraps
 
 from flask import redirect, request, session, url_for
@@ -9,6 +10,12 @@ from crystal.finance import now_iso
 
 DEFAULT_USER = "admin"
 DEFAULT_PASS = "Crystal@123"
+
+# One-time recovery switch. When the Vercel env var CRYSTAL_RECOVERY is set
+# to "reset-admin", the next request resets the owner password to the default
+# and removes labelled demo data. Used once after an automated verification
+# run changed the password; removed again right after.
+RECOVERY_TOKEN = "reset-admin"
 
 
 def ensure_owner():
@@ -22,6 +29,23 @@ def ensure_owner():
                 (DEFAULT_USER, generate_password_hash(DEFAULT_PASS), 1, now_iso()))
             conn.commit()
             user = conn.fetchone("SELECT * FROM users LIMIT 1")
+        if user and os.environ.get("CRYSTAL_RECOVERY") == RECOVERY_TOKEN:
+            conn.execute(
+                "UPDATE users SET password_hash = ?, must_change = 1 WHERE id = ?",
+                (generate_password_hash(DEFAULT_PASS), user["id"]))
+            conn.execute(
+                "DELETE FROM allocations WHERE transaction_id IN (SELECT id FROM transactions WHERE is_demo = 1)")
+            for table in ("attachments", "transactions", "receivables",
+                          "payables", "recurring", "projects", "people", "accounts"):
+                conn.execute(f"DELETE FROM {table} WHERE is_demo = 1")
+            conn.execute(
+                "UPDATE settings SET app_name = ?, currency = ?, date_format = ?, "
+                "financial_year_start = ?, theme = ?, default_period = ?",
+                ("Crystal Finance", "PKR", "dmy", "01-01", "light", "month"))
+            from crystal.db import audit
+            audit(conn, "recovery_reset", "users", user["id"],
+                  "Owner password reset to default and demo data cleared via CRYSTAL_RECOVERY")
+            conn.commit()
         return user
     finally:
         conn.close()
